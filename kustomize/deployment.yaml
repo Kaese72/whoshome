@@ -1,0 +1,75 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: charliegen@hotmail.se
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoshome
+  labels:
+    app: whoshome
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whoshome
+  template:
+    metadata:
+      labels:
+        app: whoshome
+    spec:
+      containers:
+        - name: whoshome
+          image: ghcr.io/kaese72/whoshome:v0.0.1
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoshome
+  labels:
+    app: whoshome
+spec:
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: whoshome
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: whoshome
+  labels:
+    app: whoshome
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  rules:
+    - host: whoshome.kaese.space
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blog
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - whoshome.kaese.space
+      secretName: letsencrypt-prod
