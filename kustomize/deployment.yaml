@@ -33,6 +33,7 @@ spec:
       containers:
         - name: whoshome
           image: ghcr.io/kaese72/whoshome:v0.0.1
+          command: ["python3", "-m", "whoshome.server"]
           ports:
             - containerPort: 8000
           resources:
@@ -43,7 +44,7 @@ spec:
               cpu: "0.2"
               memory: "200Mi"
           env:
-            - name: API_TOKEN
+            - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: jwt-secrets
