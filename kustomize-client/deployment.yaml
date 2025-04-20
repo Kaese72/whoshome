@@ -1,0 +1,31 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: i-am-home-reporter
+spec:
+  schedule: "0/15 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: i-am-home-reporter
+              image: ghcr.io/kaese72/whoshome:v0.0.1
+              imagePullPolicy: IfNotPresent
+              command:
+                - python3
+                - -m
+                - whoshome.client
+                - report
+              env:
+                - name: API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: jwt-secrets
+                      key: token
+                - name: API_BASE_URL
+                  value: https://whoshome.kaese.space
+          restartPolicy: Never
+# This requires the token to have been created, like so:
+# kubectl create secret -n whoshome generic jwt-secrets --from-literal=token=<token>

@@ -80,7 +80,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: blog
+                name: whoshome
                 port:
                   number: 80
   tls:
